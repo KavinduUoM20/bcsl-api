@@ -1,9 +1,20 @@
-from sqlmodel import create_engine, Session
-from typing import Generator
-from core.config import settings
+from sqlmodel import SQLModel
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
 
-engine = create_engine(settings.DATABASE_URL, echo=True)
+from app.core.config import settings
 
-def get_session() -> Generator[Session, None, None]:
-    with Session(engine) as session:
+# Create the async engine
+engine = create_async_engine(settings.DATABASE_URI, echo=True)
+
+# Create async session factory
+async_session = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
+
+# Dependency to get DB session in routes/services
+async def get_session() -> AsyncSession:
+    async with async_session() as session:
         yield session
