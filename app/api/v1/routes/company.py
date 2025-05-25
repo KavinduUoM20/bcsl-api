@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
-
+import logging
 from app.schemas.company import CompanyCreate, CompanyRead, CompanyUpdate
 from app.services.company_service import CompanyService
 from app.db.session import get_session

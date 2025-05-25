@@ -14,12 +14,17 @@ class CompanyService:
         self.session = session
 
     async def get(self, company_id: UUID) -> Optional[Company]:
-        result = await self.session.execute(select(Company).where(Company.id == company_id))
-        return result.first()
+        stmt = select(Company).where(Company.id == company_id)
+        result = await self.session.execute(stmt)
+        company_row = result.first()
+        return company_row[0] if company_row else None
+    
 
     async def get_all(self) -> List[Company]:
-        result = await self.session.execute(select(Company).order_by(desc(Company.created_at)))
-        return result.all()
+        stmt = select(Company).order_by(desc(Company.created_at))
+        result = await self.session.execute(stmt)
+        companies = result.scalars().all()
+        return companies
 
     async def create(self, company_in: CompanyCreate) -> Company:
         data = company_in.model_dump()
