@@ -1,11 +1,24 @@
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
-class ExternalLinkRead(BaseModel):
-    id: UUID
+class ExternalLinkBase(BaseModel):
     title: str
-    link: str
+    link: HttpUrl
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class ExternalLinkCreate(ExternalLinkBase):
+    pass
+
+
+class ExternalLinkRead(ExternalLinkBase):
+    id: UUID
+    member_id: UUID
+
+    model_config = {
+        "from_attributes": True
+    }

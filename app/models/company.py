@@ -26,11 +26,17 @@ class Company(SQLModel, table=True):
         sa_column=Column(pg.TIMESTAMP(timezone=True), nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
     )
 
-    # Example relationship to events, if you want to add:
-    # events: List["Event"] = Relationship(
-    #     back_populates="organizing_company",
-    #     sa_relationship_kwargs={"lazy": "selectin"}
-    # )
+    # Relationship to events
+    events: List["Event"] = Relationship(
+        back_populates="organizing_company",
+        sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete-orphan"}
+    )
+
+    # Relationship to members
+    members: List["Member"] = Relationship(
+        back_populates="company",
+        sa_relationship_kwargs={"lazy": "selectin", "cascade": "all, delete-orphan"}
+    )
 
     def __repr__(self):
         return f"<Company {self.name}>"

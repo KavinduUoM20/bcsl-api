@@ -1,12 +1,25 @@
 from uuid import UUID
-from pydantic import BaseModel
+from pydantic import BaseModel, HttpUrl
 
 
-class SocialLinkRead(BaseModel):
-    id: UUID
+class SocialLinkBase(BaseModel):
     title: str
-    link: str
+    link: HttpUrl
     icon: str
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class SocialLinkCreate(SocialLinkBase):
+    pass
+
+
+class SocialLinkRead(SocialLinkBase):
+    id: UUID
+    member_id: UUID
+
+    model_config = {
+        "from_attributes": True
+    }

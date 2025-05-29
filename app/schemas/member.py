@@ -1,31 +1,70 @@
+from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, HttpUrl
+
 from .image import ImageRead
 from .social_link import SocialLinkRead
 from .external_link import ExternalLinkRead
 
 
 class MemberBase(BaseModel):
-    name: str
-    slug: str
+    first_name: str
+    last_name: str
     user_name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    position: Optional[str] = None
+    slug: str
     wallet_key: str
-    bio: Optional[str]
-    following: Optional[str]
-    followers: Optional[str]
-    joined_at: str
+    following: Optional[str] = None
+    followers: Optional[str] = None
+    company_id: Optional[UUID] = None
+    is_active: bool = True
+    joined_at: datetime
+
+    model_config = {
+        "from_attributes": True
+    }
+
+
+class MemberCreate(MemberBase):
+    avatar_id: Optional[UUID] = None
+    cover_image_id: Optional[UUID] = None
+
+
+class MemberUpdate(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    user_name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    bio: Optional[str] = None
+    position: Optional[str] = None
+    slug: Optional[str] = None
+    wallet_key: Optional[str] = None
+    following: Optional[str] = None
+    followers: Optional[str] = None
+    company_id: Optional[UUID] = None
+    is_active: Optional[bool] = None
+    avatar_id: Optional[UUID] = None
+    cover_image_id: Optional[UUID] = None
+
+    model_config = {
+        "from_attributes": True
+    }
 
 
 class MemberRead(MemberBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
-    avatar: Optional[ImageRead]
-    cover_image: Optional[ImageRead]
-    socials: List[SocialLinkRead]
-    links: List[ExternalLinkRead]
+    avatar: Optional[ImageRead] = None
+    cover_image: Optional[ImageRead] = None
+    socials: List[SocialLinkRead] = []
+    links: List[ExternalLinkRead] = []
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

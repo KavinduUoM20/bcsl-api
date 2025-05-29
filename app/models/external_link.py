@@ -1,11 +1,22 @@
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field, Relationship
+from sqlalchemy import Column, ForeignKey
+import sqlalchemy.dialects.postgresql as pg
 
 
 class ExternalLink(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True, index=True)
-    title: str
-    link: str
+    __tablename__ = "externallinks"
 
-    member_id: UUID = Field(foreign_key="member.id")
-    member: "Member" = Relationship(back_populates="links")
+    id: UUID = Field(
+        sa_column=Column(pg.UUID(as_uuid=True), primary_key=True, default=uuid4, nullable=False)
+    )
+    title: str = Field(sa_column=Column(pg.VARCHAR(100), nullable=False))
+    link: str = Field(sa_column=Column(pg.VARCHAR(255), nullable=False))
+
+    member_id: UUID = Field(
+        sa_column=Column(pg.UUID(as_uuid=True), ForeignKey("members.id"), nullable=False)
+    )
+    member: "Member" = Relationship(
+        back_populates="links",
+        sa_relationship_kwargs={"lazy": "selectin"}
+    )
