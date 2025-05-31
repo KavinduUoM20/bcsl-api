@@ -68,3 +68,28 @@ class MemberRead(MemberBase):
     model_config = {
         "from_attributes": True
     }
+
+
+class MemberPublicRead(BaseModel):
+    """
+    Public member information schema - used for followers/following lists and public profile views.
+    Only includes information that should be publicly visible.
+    """
+    id: UUID
+    first_name: str
+    last_name: str
+    user_name: str
+    slug: str
+    bio: Optional[str] = None
+    position: Optional[str] = None
+    followers: Optional[str] = None
+    following: Optional[str] = None
+    is_active: bool = True
+    avatar_id: Optional[UUID] = None
+    cover_image_id: Optional[UUID] = None
+    socials: Optional[List[SocialLinkRead]] = None
+    links: Optional[List[ExternalLinkRead]] = None
+
+    model_config = {
+        "from_attributes": True
+    }

@@ -3,7 +3,7 @@ from typing import List
 from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.member import MemberCreate, MemberRead, MemberUpdate
+from app.schemas.member import MemberCreate, MemberRead, MemberUpdate, MemberPublicRead
 from app.schemas.social_link import SocialLinkCreate, SocialLinkRead
 from app.schemas.external_link import ExternalLinkCreate, ExternalLinkRead
 from app.services.member_service import MemberService
@@ -203,4 +203,36 @@ async def unfollow_member(
     """
     service = MemberService(session)
     await service.unfollow_member(follower_id, followed_id)
-    return None 
+    return None
+
+
+@router.get("/{member_id}/followers", response_model=List[MemberPublicRead])
+async def get_member_followers(
+    member_id: UUID,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=100),
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Get all followers of a specific member.
+    Returns only public information about the followers.
+    """
+    service = MemberService(session)
+    followers = await service.get_followers(member_id, skip=skip, limit=limit)
+    return followers
+
+
+@router.get("/{member_id}/following", response_model=List[MemberPublicRead])
+async def get_member_following(
+    member_id: UUID,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=100),
+    session: AsyncSession = Depends(get_session)
+):
+    """
+    Get all members that this member is following.
+    Returns only public information about the followed members.
+    """
+    service = MemberService(session)
+    following = await service.get_following(member_id, skip=skip, limit=limit)
+    return following 

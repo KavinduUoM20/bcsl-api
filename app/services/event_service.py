@@ -39,6 +39,12 @@ class EventService:
 
     async def update(self, event: Event, event_in: EventUpdate) -> Event:
         event_data = event_in.model_dump(exclude_unset=True)
+        # Convert HttpUrl objects to strings
+        if event_data.get("cover_image_url"):
+            event_data["cover_image_url"] = str(event_data["cover_image_url"])
+        if event_data.get("registration_link"):
+            event_data["registration_link"] = str(event_data["registration_link"])
+        
         for key, value in event_data.items():
             setattr(event, key, value)
         event.updated_at = datetime.utcnow()

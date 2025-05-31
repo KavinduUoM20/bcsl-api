@@ -110,7 +110,10 @@ class MemberService:
         if not member:
             raise HTTPException(status_code=404, detail="Member not found")
         
-        social_link = SocialLink(title=title, link=link, icon=icon, member_id=member_id)
+        # Convert HttpUrl to string
+        link_str = str(link)
+        
+        social_link = SocialLink(title=title, link=link_str, icon=icon, member_id=member_id)
         self.session.add(social_link)
         await self.session.commit()
         await self.session.refresh(social_link)
@@ -121,7 +124,10 @@ class MemberService:
         if not member:
             raise HTTPException(status_code=404, detail="Member not found")
         
-        external_link = ExternalLink(title=title, link=link, member_id=member_id)
+        # Convert HttpUrl to string
+        link_str = str(link)
+        
+        external_link = ExternalLink(title=title, link=link_str, member_id=member_id)
         self.session.add(external_link)
         await self.session.commit()
         await self.session.refresh(external_link)
@@ -146,13 +152,34 @@ class MemberService:
         if result.first():
             raise HTTPException(status_code=400, detail="Already following this member")
         
+        # Create follower relationship
         follower_rel = Follower(follower_id=follower_id, followed_id=followed_id)
         self.session.add(follower_rel)
+
+        # Update follower counts
+        # Get current counts or default to 0
+        follower_following = int(follower.following or 0)
+        followed_followers = int(followed.followers or 0)
+
+        # Increment counts
+        follower.following = str(follower_following + 1)
+        followed.followers = str(followed_followers + 1)
+
+        # Save changes
+        self.session.add(follower)
+        self.session.add(followed)
         await self.session.commit()
         await self.session.refresh(follower_rel)
         return follower_rel
 
     async def unfollow_member(self, follower_id: UUID, followed_id: UUID) -> None:
+        # Check if both members exist
+        follower = await self.get(follower_id)
+        followed = await self.get(followed_id)
+        if not follower or not followed:
+            raise HTTPException(status_code=404, detail="Member not found")
+
+        # Check if following relationship exists
         stmt = select(Follower).where(
             Follower.follower_id == follower_id,
             Follower.followed_id == followed_id
@@ -162,7 +189,21 @@ class MemberService:
         if not follower_rel:
             raise HTTPException(status_code=404, detail="Not following this member")
         
+        # Delete follower relationship
         await self.session.delete(follower_rel[0])
+
+        # Update follower counts
+        # Get current counts or default to 0
+        follower_following = int(follower.following or 0)
+        followed_followers = int(followed.followers or 0)
+
+        # Decrement counts (ensure they don't go below 0)
+        follower.following = str(max(0, follower_following - 1))
+        followed.followers = str(max(0, followed_followers - 1))
+
+        # Save changes
+        self.session.add(follower)
+        self.session.add(followed)
         await self.session.commit()
 
     async def _check_unique_constraints(
@@ -198,3 +239,45 @@ class MemberService:
                 if wallet_key and member.wallet_key == wallet_key:
                     return "Wallet key already registered"
         return None
+
+    async def get_followers(self, member_id: UUID, skip: int = 0, limit: int = 100) -> List[Member]:
+        """
+        Get all followers of a specific member.
+        """
+        # First check if the member exists
+        member = await self.get(member_id)
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+
+        # Get all follower relationships where this member is being followed
+        stmt = (
+            select(Member)
+            .join(Follower, Member.id == Follower.follower_id)
+            .where(Follower.followed_id == member_id)
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        followers = result.scalars().all()
+        return list(followers)
+
+    async def get_following(self, member_id: UUID, skip: int = 0, limit: int = 100) -> List[Member]:
+        """
+        Get all members that this member is following.
+        """
+        # First check if the member exists
+        member = await self.get(member_id)
+        if not member:
+            raise HTTPException(status_code=404, detail="Member not found")
+
+        # Get all follower relationships where this member is following others
+        stmt = (
+            select(Member)
+            .join(Follower, Member.id == Follower.followed_id)
+            .where(Follower.follower_id == member_id)
+            .offset(skip)
+            .limit(limit)
+        )
+        result = await self.session.execute(stmt)
+        following = result.scalars().all()
+        return list(following)
