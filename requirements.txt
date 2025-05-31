@@ -2,3 +2,8 @@
 "asyncpg"
 "pydantic-settings"
 "sqlmodel"
+"python-jose[cryptography]"
+"passlib[bcrypt]"
+"python-multipart"
+"emails"
+"alembic"

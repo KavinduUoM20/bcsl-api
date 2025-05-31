@@ -1,25 +1,46 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.db.init_db import init_db
-# from app.api.v1.routes import user
-from app.api.v1.routes import company
-from app.api.v1.routes import event
-from app.api.v1.routes import member
+from sqlmodel import SQLModel
+
+from app.core.config import settings
+from app.api.v1.routes import auth, user, company, event, member  # Import route modules
+from app.db.session import engine
+# Import models for table creation
+from app.models.user import User
+from app.models.member import Member
+from app.models.company import Company
+from app.models.follower import Follower
+from app.models.social_link import SocialLink
+from app.models.external_link import ExternalLink
+from app.models.image import Image
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("Starting up...")
-    await init_db()
+    # Create database tables
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
     yield
-    print("Server has been stopped")
 
-version = "v1"
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version="v1",
+    lifespan=lifespan
+)
 
-version_prefix =f"/api/{version}"
+# Set all CORS enabled origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-app = FastAPI(title="bcsl api", version=version, lifespan=lifespan)
-
-# app.include_router(user.router, prefix=f"{version_prefix}/users", tags=["users"])
-app.include_router(company.router, prefix=f"{version_prefix}/companies", tags=["companies"])
-app.include_router(event.router, prefix=f"{version_prefix}/events", tags=["events"])
-app.include_router(member.router, prefix=f"{version_prefix}/members", tags=["members"])
+# API routes
+api_v1_prefix = f"{settings.API_V1_STR}"
+app.include_router(auth.router, prefix=f"{api_v1_prefix}/auth", tags=["auth"])
+app.include_router(user.router, prefix=f"{api_v1_prefix}/users", tags=["users"])
+app.include_router(company.router, prefix=f"{api_v1_prefix}/companies", tags=["companies"])
+app.include_router(event.router, prefix=f"{api_v1_prefix}/events", tags=["events"])
+app.include_router(member.router, prefix=f"{api_v1_prefix}/members", tags=["members"])

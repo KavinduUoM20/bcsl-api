@@ -56,7 +56,6 @@ class MemberService:
     async def create(self, member_in: MemberCreate) -> Member:
         # Check for unique constraints
         existing = await self._check_unique_constraints(
-            email=member_in.email,
             username=member_in.user_name,
             slug=member_in.slug,
             wallet_key=member_in.wallet_key
@@ -75,9 +74,8 @@ class MemberService:
 
     async def update(self, member: Member, member_in: MemberUpdate) -> Member:
         # Check unique constraints if relevant fields are being updated
-        if any([member_in.email, member_in.user_name, member_in.slug, member_in.wallet_key]):
+        if any([member_in.user_name, member_in.slug, member_in.wallet_key]):
             existing = await self._check_unique_constraints(
-                email=member_in.email if member_in.email and member_in.email != member.email else None,
                 username=member_in.user_name if member_in.user_name and member_in.user_name != member.user_name else None,
                 slug=member_in.slug if member_in.slug and member_in.slug != member.slug else None,
                 wallet_key=member_in.wallet_key if member_in.wallet_key and member_in.wallet_key != member.wallet_key else None
@@ -208,15 +206,12 @@ class MemberService:
 
     async def _check_unique_constraints(
         self,
-        email: Optional[str] = None,
         username: Optional[str] = None,
         slug: Optional[str] = None,
         wallet_key: Optional[str] = None
     ) -> Optional[str]:
         """Check unique constraints and return error message if violated."""
         conditions = []
-        if email:
-            conditions.append(Member.email == email)
         if username:
             conditions.append(Member.user_name == username)
         if slug:
@@ -230,8 +225,6 @@ class MemberService:
             existing = result.first()
             if existing:
                 member = existing[0]
-                if email and member.email == email:
-                    return "Email already registered"
                 if username and member.user_name == username:
                     return "Username already taken"
                 if slug and member.slug == slug:

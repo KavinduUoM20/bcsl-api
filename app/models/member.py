@@ -19,19 +19,16 @@ class Member(SQLModel, table=True):
     first_name: str = Field(sa_column=Column(pg.VARCHAR(100), nullable=False))
     last_name: str = Field(sa_column=Column(pg.VARCHAR(100), nullable=False))
     user_name: str = Field(sa_column=Column(pg.VARCHAR(100), nullable=False, unique=True))
-    email: str = Field(sa_column=Column(pg.VARCHAR(255), nullable=False, unique=True))
-    phone: Optional[str] = Field(sa_column=Column(pg.VARCHAR(50), nullable=True))
-    
-    # Profile Information
     bio: Optional[str] = Field(sa_column=Column(pg.TEXT, nullable=True))
     position: Optional[str] = Field(sa_column=Column(pg.VARCHAR(100), nullable=True))
     slug: str = Field(sa_column=Column(pg.VARCHAR(255), nullable=False, unique=True))
     wallet_key: str = Field(sa_column=Column(pg.VARCHAR(255), nullable=False, unique=True))
+    email: str = Field(sa_column=Column(pg.VARCHAR(255), nullable=False))
     
     # Status and Metrics
+    is_active: bool = Field(sa_column=Column(pg.BOOLEAN, nullable=False, default=True))
     following: Optional[str] = Field(sa_column=Column(pg.TEXT, nullable=True))
     followers: Optional[str] = Field(sa_column=Column(pg.TEXT, nullable=True))
-    is_active: bool = Field(default=True, sa_column=Column(pg.BOOLEAN, nullable=False))
     
     # Timestamps
     joined_at: datetime = Field(sa_column=Column(pg.TIMESTAMP(timezone=True), nullable=False))
@@ -54,6 +51,10 @@ class Member(SQLModel, table=True):
     )
 
     # Relationships
+    user: "User" = Relationship(
+        back_populates="member",
+        sa_relationship_kwargs={"lazy": "joined"}
+    )
     company: Optional["Company"] = Relationship(
         back_populates="members",
         sa_relationship_kwargs={"lazy": "selectin"}

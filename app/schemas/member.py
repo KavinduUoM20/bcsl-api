@@ -1,7 +1,7 @@
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
-from pydantic import BaseModel, EmailStr, HttpUrl
+from pydantic import BaseModel, HttpUrl
 
 from .image import ImageRead
 from .social_link import SocialLinkRead
@@ -12,17 +12,16 @@ class MemberBase(BaseModel):
     first_name: str
     last_name: str
     user_name: str
-    email: EmailStr
-    phone: Optional[str] = None
     bio: Optional[str] = None
     position: Optional[str] = None
     slug: str
     wallet_key: str
+    email: Optional[str] = None
     following: Optional[str] = None
     followers: Optional[str] = None
     company_id: Optional[UUID] = None
-    is_active: bool = True
     joined_at: datetime
+    is_active: bool = True
 
     model_config = {
         "from_attributes": True
@@ -38,8 +37,6 @@ class MemberUpdate(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     user_name: Optional[str] = None
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
     bio: Optional[str] = None
     position: Optional[str] = None
     slug: Optional[str] = None
@@ -47,9 +44,9 @@ class MemberUpdate(BaseModel):
     following: Optional[str] = None
     followers: Optional[str] = None
     company_id: Optional[UUID] = None
-    is_active: Optional[bool] = None
     avatar_id: Optional[UUID] = None
     cover_image_id: Optional[UUID] = None
+    is_active: Optional[bool] = None
 
     model_config = {
         "from_attributes": True
@@ -84,7 +81,6 @@ class MemberPublicRead(BaseModel):
     position: Optional[str] = None
     followers: Optional[str] = None
     following: Optional[str] = None
-    is_active: bool = True
     avatar_id: Optional[UUID] = None
     cover_image_id: Optional[UUID] = None
     socials: Optional[List[SocialLinkRead]] = None
