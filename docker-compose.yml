@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: bcsl-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_PORT=5432
+      - DB_NAME=pgsl_db
+      - DB_USER=pgsl_admin
+      - DB_PASSWORD=bcsl@3125pg
+    extra_hosts:
+      - "host.docker.internal:host-gateway" 
