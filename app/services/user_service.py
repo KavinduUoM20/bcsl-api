@@ -68,9 +68,7 @@ class UserService:
         user = User(
             **user_data,
             member_id=member_id,
-            password_hash=hashed_password,
-            is_active=True,
-            is_verified=False
+            password_hash=hashed_password
         )
 
         self.session.add(user)

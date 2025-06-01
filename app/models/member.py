@@ -89,6 +89,13 @@ class Member(SQLModel, table=True):
             "foreign_keys": "[Follower.follower_id]"
         }
     )
+    badges: List["MemberBadge"] = Relationship(
+        back_populates="member",
+        sa_relationship_kwargs={
+            "lazy": "selectin",
+            "cascade": "all, delete-orphan"
+        }
+    )
 
     def __repr__(self):
         return f"<Member {self.first_name} {self.last_name}>"

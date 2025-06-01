@@ -7,5 +7,6 @@ class FollowerRead(BaseModel):
     follower_id: UUID
     followed_id: UUID
 
-    class Config:
-        orm_mode = True
+    model_config = {
+        "from_attributes": True
+    }

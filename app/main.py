@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from sqlmodel import SQLModel
 
 from app.core.config import settings
-from app.api.v1.routes import auth, user, company, event, member  # Import route modules
+from app.api.v1.routes import auth, user, company, event, member, notification, badge  # Import notification and badge routes
 from app.db.session import engine
 # Import models for table creation
 from app.models.user import User
@@ -14,6 +14,8 @@ from app.models.follower import Follower
 from app.models.social_link import SocialLink
 from app.models.external_link import ExternalLink
 from app.models.image import Image
+from app.models.notification import Notification  # Import notification model
+from app.models.badge import Badge, MemberBadge  # Import badge models
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -44,3 +46,5 @@ app.include_router(user.router, prefix=f"{api_v1_prefix}/users", tags=["users"])
 app.include_router(company.router, prefix=f"{api_v1_prefix}/companies", tags=["companies"])
 app.include_router(event.router, prefix=f"{api_v1_prefix}/events", tags=["events"])
 app.include_router(member.router, prefix=f"{api_v1_prefix}/members", tags=["members"])
+app.include_router(notification.router, prefix=f"{api_v1_prefix}/notifications", tags=["notifications"])
+app.include_router(badge.router, prefix=f"{api_v1_prefix}/badges", tags=["badges"])

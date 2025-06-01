@@ -2,6 +2,11 @@ from typing import Optional, List
 from pydantic_settings import BaseSettings
 from pydantic import EmailStr, validator, PostgresDsn
 import secrets
+from dotenv import load_dotenv
+import os
+
+# Load .env file explicitly
+load_dotenv(override=True)
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
@@ -13,7 +18,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
     # Database
-    DATABASE_URI: PostgresDsn  # Changed from DATABASE_URL to DATABASE_URI to match your env
+    DATABASE_URI: PostgresDsn
     
     # CORS
     BACKEND_CORS_ORIGINS: List[str] = ["*"]
@@ -39,4 +44,4 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         extra = "allow"  # Allow extra fields in the settings
 
-settings = Settings()
+settings = Settings(_env_file='.env', _env_file_encoding='utf-8')
