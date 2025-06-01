@@ -34,15 +34,30 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          port: 51821  # Updated to your custom SSH port
           script: |
-            echo "Pulling new image..."
-            docker pull ${{ secrets.DOCKER_USERNAME }}/bcsl-api:latest || exit 1
+            set -x  # Enable debug mode to see each command
             
-            echo "Stopping existing container..."
+            echo "==== System Info ===="
+            docker version
+            docker info
+            
+            echo "==== Checking Docker Hub Connection ===="
+            docker login -u ${{ secrets.DOCKER_USERNAME }} || echo "Docker login failed but continuing..."
+            
+            echo "==== Pulling new image ===="
+            docker pull ${{ secrets.DOCKER_USERNAME }}/bcsl-api:latest
+            if [ $? -ne 0 ]; then
+              echo "Failed to pull image"
+              exit 1
+            fi
+            
+            echo "==== Cleaning up existing container ===="
             docker stop bcsl-api || true
             docker rm bcsl-api || true
             
-            echo "Starting new container..."
+            echo "==== Starting new container ===="
+            # Application port 8000 is separate from SSH port 22
             docker run -d \
               --name bcsl-api \
               -p 8000:8000 \
@@ -54,5 +69,16 @@ jobs:
               --add-host=host.docker.internal:host-gateway \
               ${{ secrets.DOCKER_USERNAME }}/bcsl-api:latest
             
-            echo "Verifying container is running..."
-            docker ps | grep bcsl-api || exit 1 
+            echo "==== Verifying container ===="
+            docker ps -a  # Show all containers, including stopped ones
+            
+            echo "==== Container logs ===="
+            docker logs bcsl-api || echo "Failed to get logs"
+            
+            echo "==== Checking container status ===="
+            if ! docker ps | grep -q bcsl-api; then
+              echo "Container is not running"
+              exit 1
+            fi
+            
+            echo "==== Deployment complete ====" 
