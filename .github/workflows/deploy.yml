@@ -61,11 +61,7 @@ jobs:
             docker run -d \
               --name bcsl-api \
               -p 8000:8000 \
-              -e DB_HOST=host.docker.internal \
-              -e DB_PORT=5432 \
-              -e DB_NAME=pgsl_db \
-              -e DB_USER=pgsl_admin \
-              -e DB_PASSWORD=bcsl@3125pg \
+              -e DATABASE_URI="postgresql+asyncpg://pgsl_admin:bcsl%403125pg@host.docker.internal:5432/pgsl_db" \
               --add-host=host.docker.internal:host-gateway \
               ${{ secrets.DOCKER_USERNAME }}/bcsl-api:latest
             
