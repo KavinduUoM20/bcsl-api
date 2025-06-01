@@ -34,7 +34,8 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: 51821  # Updated to your custom SSH port
+          port: ${{ secrets.VPS_SSH_PORT }}
+          passphrase: ${{ secrets.VPS_SSH_PASSPHRASE }}
           script: |
             set -x  # Enable debug mode to see each command
             
@@ -57,7 +58,6 @@ jobs:
             docker rm bcsl-api || true
             
             echo "==== Starting new container ===="
-            # Application port 8000 is separate from SSH port 22
             docker run -d \
               --name bcsl-api \
               -p 8000:8000 \
